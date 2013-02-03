@@ -1,5 +1,5 @@
-websocket-popen
-===============
+websocket-popen-server
+======================
 
 websocket-popen-server can provide your programs or scripts  as a web service 
 in easy way. When you accessed a URI, corresponding program will be started.

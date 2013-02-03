@@ -22,7 +22,11 @@ Java 1.6 later
 
 Below is tested with OS X Mountain Lion and probably works in Linux too. 
 
-Download jar file and run it.
+Download jar file here
+
+https://raw.github.com/chiyano/websocket-popen-server/bin/websocket-popen-server-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+
+Then run it.
 
     java -jar websocket-popen-server-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 
@@ -37,8 +41,8 @@ In the JavaScript Console of your Google Chrome, try this.
 
     ws = new WebSocket("ws://localhost:9999/ws/hello")
     ws.onmessage = function (e) { console.log(e.data) }
-    ws.send("test")
-    ws.send("bye")
+    ws.send("test\n")
+    ws.send("bye\n")
     ws.send("\0")
 
 ## License

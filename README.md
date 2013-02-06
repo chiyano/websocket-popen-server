@@ -24,13 +24,13 @@ Below is tested with OS X Mountain Lion and probably works in Linux too.
 
 Download jar file here
 
-https://raw.github.com/chiyano/websocket-popen-server/bin/websocket-popen-server-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+https://github.com/chiyano/websocket-popen-server/raw/master/bin/websocket-popen-server-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 
 Then run it.
 
     java -jar websocket-popen-server-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 
-Create a script and save as ~/bin/hello. (Do not forget chmod 755 and rehash)
+Create a script and save as ~/bin/hello. (Don't forget chmod 755)
 
     #!/bin/bash
     cat | sed -l 's/^/hello /'

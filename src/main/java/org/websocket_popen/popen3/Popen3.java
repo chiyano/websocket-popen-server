@@ -135,7 +135,7 @@ public class Popen3 {
 	}
 	
 	public boolean isProcessRunning() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-		Class<Process> klass = (Class<Process>) process.getClass();
+		Class<? extends Process> klass = process.getClass();
 		Field field = klass.getDeclaredField("hasExited");
 		field.setAccessible(true);
 		return !field.getBoolean(process);

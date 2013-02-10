@@ -69,6 +69,8 @@ public class Popen3 {
 					}
 				}
 			});		
+		} else {
+			process.getOutputStream().close();
 		}
 
 		if (stdoutProc != null) {
@@ -147,11 +149,13 @@ public class Popen3 {
 			process.waitFor();
 		}
 		isRunning = false;
+		joinAll();
 	}
 	
 	public void waitFor() throws InterruptedException {
 		if (process != null)
 			process.waitFor();
+		isRunning = false;
 		joinAll();
 	}
 	

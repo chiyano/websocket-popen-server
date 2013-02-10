@@ -151,7 +151,6 @@ public class Popen3 {
 			process.waitFor();
 		}
 		isRunning = false;
-		joinAll();
 	}
 
 	public void join() throws InterruptedException {

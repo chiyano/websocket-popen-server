@@ -12,6 +12,7 @@ public class PopenServlet extends WebSocketServlet {
 	private static final long serialVersionUID = 1L;
 
 	public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) {
+		// FIXME: move following block to another package
 		List<String> list = Arrays.asList(request.getPathInfo().split("/"));
 		
 		list = list.subList(1, list.size());

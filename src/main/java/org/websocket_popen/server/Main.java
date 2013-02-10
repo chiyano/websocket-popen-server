@@ -7,6 +7,8 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.Logger;
 
+import com.sun.jersey.spi.container.servlet.ServletContainer;
+
 public class Main {
 
 	private final Logger log = Log.getLogger(getClass());
@@ -31,6 +33,10 @@ public class Main {
 
 		ServletHolder holder = new ServletHolder(new PopenServlet());
 		root.addServlet(holder, "/ws/*");
+		
+		ServletHolder servletHolder = new ServletHolder(ServletContainer.class);
+		servletHolder.setInitParameter("com.sun.jersey.config.property.packages", "org.websocket_popen.server.restservice");
+		root.addServlet(servletHolder, "/rest/*");
 
 		log.info("Start server");
 

@@ -40,10 +40,10 @@ public class Popen3 {
 
 	public void start() throws IOException, InterruptedException {
 		if (isStarted) return;
-		
+
 		isStarted = true;
 		isRunning = true;
-		
+
 		process = Runtime.getRuntime().exec(cmds);
 
 		if (stdinProc != null) {
@@ -55,16 +55,12 @@ public class Popen3 {
 							stdinProc.call(stdinWriter);
 						}
 					} catch (SecurityException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IllegalArgumentException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (NoSuchFieldException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IllegalAccessException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -77,7 +73,7 @@ public class Popen3 {
 			stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			stdoutThread = new Thread(new Runnable() {
 				CharBuffer buf = CharBuffer.allocate(1024);
-				
+
 				public void run() {
 					while (!Thread.interrupted()) {
 						try {
@@ -93,7 +89,6 @@ public class Popen3 {
 								break;
 							}
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -121,7 +116,6 @@ public class Popen3 {
 								break;
 							}
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -131,11 +125,11 @@ public class Popen3 {
 
 		startAll();
 	}
-	
+
 	public boolean isStarted() {
 		return isStarted;
 	}
-	
+
 	public boolean isProcessRunning() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 		Class<? extends Process> klass = process.getClass();
 		Field field = klass.getDeclaredField("hasExited");
@@ -151,14 +145,14 @@ public class Popen3 {
 		isRunning = false;
 		joinAll();
 	}
-	
+
 	public void waitFor() throws InterruptedException {
 		if (process != null)
 			process.waitFor();
 		isRunning = false;
 		joinAll();
 	}
-	
+
 	public Process getProcess() {
 		return process;
 	}

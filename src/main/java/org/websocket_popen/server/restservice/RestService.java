@@ -1,7 +1,7 @@
 package org.websocket_popen.server.restservice;
 
 import java.io.IOException;
-import java.nio.Buffer;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,12 +11,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.websocket_popen.popen3.Popen3;
-import org.websocket_popen.popen3.PopenReaderProc;
-
 @Path("/")
 public class RestService {
 	private Result result = new Result();
+
+	private Process ps = null;
 
 	@Path("/{command}")
 	@GET
@@ -30,26 +29,52 @@ public class RestService {
 		}
 		sb.setLength(sb.length() - 1);
 		String[] cmds = sb.toString().split("\\+");
-		
-		Popen3 popen3 = new Popen3(cmds, new PopenReaderProc() {
-			public void call(Buffer buf) {
-				result.setStdout(buf.toString());
-			}
-		}, new PopenReaderProc() {
 
-			public void call(Buffer buf) {
-				result.setStderr(buf.toString());
+		Thread stdoutThread = null;
+		Thread stderrThread = null;
+
+		try {
+			ps = Runtime.getRuntime().exec(cmds);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ps.getOutputStream().close();
+		stdoutThread = new Thread(new Runnable() {
+			public void run() {
+				InputStream is = ps.getInputStream();
+				final byte[] buffer = new byte[1024];
+				int length;
+				try {
+					while ((length = is.read(buffer)) > 0) {
+						result.setStdout(result.getStdout() + new String(buffer, 0, length));
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		stderrThread = new Thread(new Runnable() {
+			public void run() {
+				InputStream is = ps.getErrorStream();
+				final byte[] buffer = new byte[1024];
+				try {
+					int length;
+					while ((length = is.read(buffer)) > 0) {
+						result.setStderr(result.getStderr() + new String(buffer, 0, length));
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 
-		popen3.startWithoutStdin();
+		stdoutThread.start();
+		stderrThread.start();
 		
-		popen3.join();
+		ps.waitFor();
 		
-		popen3.close();
-		
-		result.setExitValue(popen3.getProcess().exitValue());
-		
+		result.setExitValue(ps.exitValue());
+
 		return result;
 	}
 }

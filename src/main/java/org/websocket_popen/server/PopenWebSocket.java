@@ -1,70 +1,60 @@
 package org.websocket_popen.server;
 
+
 import java.io.IOException;
-import java.nio.Buffer;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.lang.reflect.Field;
 
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.Logger;
 import org.eclipse.jetty.websocket.WebSocket;
 
-import org.websocket_popen.popen3.Popen3;
-import org.websocket_popen.popen3.PopenReaderProc;
 
 public class PopenWebSocket implements WebSocket.OnTextMessage {
-	private Connection connection = null;
-	private Popen3 popen3;
 	private final Logger log = Log.getLogger(getClass());
 
-	public PopenWebSocket(String[] cmds) {
-		popen3 = new Popen3(cmds, new PopenReaderProc() {
+	private Process ps = null;
 
-			public void call(Buffer buf) {
-				String s = buf.toString();
+	private Thread stdoutThread = null;
+	private Thread stderrThread = null;
+
+	private Connection con = null;
+
+	private PrintWriter stdin;
+
+	private boolean isStarted;
+
+	public PopenWebSocket(String[] cmds) {
+		try {
+			ps = Runtime.getRuntime().exec(cmds);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		stdin = new PrintWriter(ps.getOutputStream());
+		stdoutThread = new Thread(new Runnable() {
+			public void run() {
+				InputStream is = ps.getInputStream();
+				final byte[] buffer = new byte[1024];
+				int length;
 				try {
-					log.debug("Message \"" + s + "\" received from popen3 stdout");
-					connection.sendMessage(s);
-					try {
-						if (!popen3.isProcessRunning()) {
-							popen3.close();
-							connection.close();
-						}
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (NoSuchFieldException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					} 
+					while ((length = is.read(buffer)) > 0) {
+						String mesg = new String(buffer, 0, length);
+						log.debug("send:" + mesg);
+						con.sendMessage(mesg);
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-		}, new PopenReaderProc() {
-
-			public void call(Buffer buf) {
-				String s = buf.toString();
+		});
+		stderrThread = new Thread(new Runnable() {
+			public void run() {
+				InputStream is = ps.getErrorStream();
+				final byte[] buffer = new byte[1024];
 				try {
-					log.debug("Message \"" + s + "\" received from popen3 stderr");
-					connection.sendMessage(s);
-					try {
-						if (!popen3.isProcessRunning()) {
-							popen3.close();
-							connection.close();
-						}
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (NoSuchFieldException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
+					while (is.read(buffer) > 0) {
+						con.sendMessage(new String(buffer));
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -76,8 +66,8 @@ public class PopenWebSocket implements WebSocket.OnTextMessage {
 	public void onClose(int arg0, String arg1) {
 		log.debug("Connection closed");
 		try {
-			log.debug("Close popen3");
-			popen3.close();
+			ps.getOutputStream().close();
+			ps.waitFor();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -87,47 +77,38 @@ public class PopenWebSocket implements WebSocket.OnTextMessage {
 
 	public void onOpen(Connection conn) {
 		log.debug("Connection associated");
-		connection = conn;
+		con = conn;
 	}
 
 	public void onMessage(String mesg) {
-		log.debug("Message \"" + mesg + "\" received");
+		log.debug(mesg + "\" received");
+
 		try {
-			// Start popen3 threads when the first message received.
-			if (!popen3.isStarted()) {
-				popen3.start();
+			if (!isStarted) {
+				start();
 			}
 
 			char c[] = mesg.toCharArray();
+			
 			if (c.length > 0 && c[0] == '\0') {
 				// Close popen3 when the first charactor of 
 				// received message is '\0' assumed as EOF.
 				log.debug("Pseudo EOF received");
-				popen3.close();
-				connection.close();
+				ps.getOutputStream().close();
+				ps.waitFor();
+				con.close();
 			} else {
-				if (popen3.isProcessRunning()) {
-					log.debug("Write message \"" + mesg + "\" to popen3");
-					popen3.write(mesg);
+				if (isProcessRunning()) {
+					stdin.print(mesg);
+					stdin.flush();
 				} else {
-					popen3.close();
-					connection.close();
+					ps.getOutputStream().close();
+					ps.waitFor();
+					con.close();		
 				}
 			}
 		} catch (IOException e) {
-			log.debug("IOException received");
-			try {
-				// Close popen3 correctly because the process popen 
-				// started is no longer running.
-				log.debug("Close popen3");
-				popen3.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
-			}
-			log.debug("Close connection");
-			connection.close();
+			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (SecurityException e) {
@@ -139,6 +120,19 @@ public class PopenWebSocket implements WebSocket.OnTextMessage {
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void start() {
+		stdoutThread.start();
+		stderrThread.start();
+		isStarted = true;
+	}
+
+	private boolean isProcessRunning() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+		Class<? extends Process> klass = ps.getClass();
+		Field field = klass.getDeclaredField("hasExited");
+		field.setAccessible(true);
+		return !field.getBoolean(ps);
 	}
 
 }

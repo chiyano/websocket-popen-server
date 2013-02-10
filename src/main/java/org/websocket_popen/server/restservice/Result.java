@@ -4,9 +4,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Result {
-	private String stdout;
-	private String stderr;
-	private Integer exitValue;
+	private String stdout = "";
+	private String stderr = "";
+	private Integer exitValue = 0;
 
 	public String getStdout() {
 		return stdout;

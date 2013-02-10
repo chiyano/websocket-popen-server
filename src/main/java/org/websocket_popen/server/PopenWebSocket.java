@@ -29,23 +29,17 @@ public class PopenWebSocket implements WebSocket.OnTextMessage {
 							connection.close();
 						}
 					} catch (SecurityException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IllegalArgumentException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (NoSuchFieldException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IllegalAccessException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} 
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -62,23 +56,17 @@ public class PopenWebSocket implements WebSocket.OnTextMessage {
 							connection.close();
 						}
 					} catch (SecurityException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IllegalArgumentException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (NoSuchFieldException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IllegalAccessException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -91,10 +79,8 @@ public class PopenWebSocket implements WebSocket.OnTextMessage {
 			log.debug("Close popen3");
 			popen3.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -136,28 +122,21 @@ public class PopenWebSocket implements WebSocket.OnTextMessage {
 				log.debug("Close popen3");
 				popen3.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			log.debug("Close connection");
 			connection.close();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoSuchFieldException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

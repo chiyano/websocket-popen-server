@@ -42,10 +42,9 @@ public class RestService {
 			}
 		});
 
-		popen3.start();
+		popen3.startWithoutStdin();
 		
-		// FIXME: use a waiting method
-		while (popen3.isProcessRunning());
+		popen3.join();
 		
 		popen3.close();
 		

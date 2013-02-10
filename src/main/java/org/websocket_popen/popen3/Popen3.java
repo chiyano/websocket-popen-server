@@ -23,6 +23,7 @@ public class Popen3 {
 	private BufferedReader stderrReader;
 	private boolean isStarted = false;
 	private volatile boolean isRunning = false;
+	private boolean withoutStdin;
 
 	public Popen3(String[] cmds, PopenWriterProc stdinProc, PopenReaderProc stdoutProc, PopenReaderProc stderrProc) {
 		this.cmds = cmds;
@@ -38,6 +39,11 @@ public class Popen3 {
 		this.stderrProc = stderrProc;
 	}
 
+	public void startWithoutStdin() throws IOException, InterruptedException {
+		withoutStdin = true;
+		start();
+	}
+
 	public void start() throws IOException, InterruptedException {
 		if (isStarted) return;
 
@@ -46,27 +52,29 @@ public class Popen3 {
 
 		process = Runtime.getRuntime().exec(cmds);
 
-		if (stdinProc != null) {
-			stdinWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-			stdinThread = new Thread(new Runnable() {
-				public void run() {
-					try {
-						while (isProcessRunning() && !Thread.interrupted()) {
-							stdinProc.call(stdinWriter);
-						}
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (NoSuchFieldException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
-					}
-				}
-			});		
-		} else {
+		if (withoutStdin) {
 			process.getOutputStream().close();
+		} else {
+			if (stdinProc != null) {
+				stdinWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+				stdinThread = new Thread(new Runnable() {
+					public void run() {
+						try {
+							while (isProcessRunning() && !Thread.interrupted()) {
+								stdinProc.call(stdinWriter);
+							}
+						} catch (SecurityException e) {
+							e.printStackTrace();
+						} catch (IllegalArgumentException e) {
+							e.printStackTrace();
+						} catch (NoSuchFieldException e) {
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							e.printStackTrace();
+						}
+					}
+				});		
+			}
 		}
 
 		if (stdoutProc != null) {
@@ -146,7 +154,7 @@ public class Popen3 {
 		joinAll();
 	}
 
-	public void waitFor() throws InterruptedException {
+	public void join() throws InterruptedException {
 		if (process != null)
 			process.waitFor();
 		isRunning = false;

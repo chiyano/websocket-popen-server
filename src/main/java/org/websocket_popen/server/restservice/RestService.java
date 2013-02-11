@@ -9,7 +9,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.GenericEntity;
+
+import com.sun.jersey.api.json.JSONWithPadding;
 
 @Path("/")
 public class RestService {
@@ -19,8 +22,8 @@ public class RestService {
 
 	@Path("/{command}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	public Result index(@PathParam ("command") String command) throws IOException, InterruptedException, SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
+	@Produces("application/x-javascript")
+	public JSONWithPadding index(@PathParam ("command") String command, @QueryParam ("callback") String callback) throws IOException, InterruptedException, SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
 		// FIXME: move following block to another package
 		List<String> list = Arrays.asList(command.split("/"));
 		StringBuilder sb = new StringBuilder();
@@ -70,11 +73,11 @@ public class RestService {
 
 		stdoutThread.start();
 		stderrThread.start();
-		
+
 		ps.waitFor();
-		
+
 		result.setExitValue(ps.exitValue());
 
-		return result;
+		return new JSONWithPadding(new GenericEntity<Result>(result) {}, callback);
 	}
 }
